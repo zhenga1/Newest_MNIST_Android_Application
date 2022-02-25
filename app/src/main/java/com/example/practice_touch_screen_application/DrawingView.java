@@ -109,30 +109,6 @@ public class DrawingView extends View {
             invalidate();
             return true;
         }
-        else if(scanned){
-            if(touchX<=posX+WIDTH && touchX>=posX)
-            {
-                if(touchY<=posY+HEIGHT && touchY>=posY)
-                {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            draw=false;
-                            scanned=true;
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            drawRect(padding,touchX-WIDTH/2,touchY-HEIGHT/2,WIDTH,HEIGHT);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            scanned=false;
-                            draw=true;
-                            break;
-                        default:
-                            return false;
-                    }
-                }
-            }
-            return true;
-        }
         else{
             return super.onTouchEvent(event);
         }
@@ -149,22 +125,6 @@ public class DrawingView extends View {
             drawPaint.setStrokeWidth(20);
             draw=true;
         }
-    }
-    protected void drawRect(float padding, float X, float Y, float width, float height){
-        Paint interiorpaint = new Paint();
-        interiorpaint.setStyle(Paint.Style.STROKE);
-        interiorpaint.setStrokeWidth(padding+2);
-        interiorpaint.setAntiAlias(true);
-        interiorpaint.setColor(Color.WHITE);
-        drawCanvas.drawRect(posX,posY,posX+WIDTH,posY+HEIGHT,interiorpaint);
-        invalidate();
-        Paint exteriorpaint = new Paint();
-        exteriorpaint.setStyle(Paint.Style.STROKE);
-        exteriorpaint.setStrokeWidth(padding);
-        exteriorpaint.setColor(Color.BLACK);
-        drawCanvas.drawRect(X,Y,X+width,Y+height,exteriorpaint);
-        invalidate();
-        posX=X;posY=Y;WIDTH=width;HEIGHT=height;
     }
     protected void startscan(int pad,int X, int Y,int width, int height){
         //int centerX = (int)this.getResources().getDisplayMetrics().widthPixels/2;
