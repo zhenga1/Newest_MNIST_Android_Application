@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,7 +37,7 @@ import java.io.FileOutputStream;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private DrawingView drawView;
     private int WIDTH,HEIGHT,padding;
-    private boolean scanned=false;
+    private boolean scanned=false,firstscale=true;
     private Button erase, start, end,save,restore,scan,plus,minus;
     private ImageButton currPaint;
     private ImageView imageView;
@@ -147,18 +148,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         View.OnClickListener onScaleClick = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(firstscale) {
+                    imageView.getLayoutParams().width = imageView.getWidth();
+                    imageView.getLayoutParams().height = imageView.getHeight();
+                    firstscale=false;
+                }
                 if(view.getId()==plus.getId())
                 {
-                    imageView.getLayoutParams().height=300;
-                    imageView.getLayoutParams().width=300;
+                    imageView.getLayoutParams().height=imageView.getLayoutParams().height+50;
+                    imageView.getLayoutParams().width=imageView.getLayoutParams().width+50;
                     imageView.requestLayout();
                     //INCREASE THE SIZE OF THE SCANNING IMAGE THING
 
                 }else if(view.getId()==minus.getId()){
-                    HEIGHT= (int) (HEIGHT*5/6);
-                    imageView.getLayoutParams().height=HEIGHT;
-                    WIDTH= (int) (WIDTH*5/6);
-                    imageView.getLayoutParams().width=WIDTH;
+                    imageView.getLayoutParams().height=imageView.getLayoutParams().height-50;
+                    imageView.getLayoutParams().width=imageView.getLayoutParams().width-50;
                     imageView.requestLayout();
                     //DECREASE THE SIZE OF THE SCANNING IMAGE THING
 
