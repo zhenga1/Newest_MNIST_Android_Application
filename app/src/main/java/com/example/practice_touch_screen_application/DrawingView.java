@@ -20,7 +20,7 @@ import java.io.File;
 public class DrawingView extends View {
     //drawing path
     private Path drawPath;
-    private boolean draw=false,erase=false,scanned=false;
+    private boolean draw=false,erase=false;
     private float posX=0,posY=0,WIDTH=0,HEIGHT=0,padding=0;
     //drawing and canvas paint
     private Paint drawPaint, canvasPaint;
@@ -125,37 +125,5 @@ public class DrawingView extends View {
             drawPaint.setStrokeWidth(20);
             draw=true;
         }
-    }
-    protected void startscan(int pad,int X, int Y,int width, int height){
-        //int centerX = (int)this.getResources().getDisplayMetrics().widthPixels/2;
-        //int centerY= (int) this.getResources().getDisplayMetrics().heightPixels/2;
-        padding=pad;
-        if(!scanned){
-            Paint exteriorpaint = new Paint();
-            exteriorpaint.setStyle(Paint.Style.STROKE);
-            exteriorpaint.setStrokeWidth(pad);
-            exteriorpaint.setColor(Color.BLACK);
-            /*Paint interiorpaint = new Paint();
-            interiorpaint.setStyle(Paint.Style.FILL);
-            interiorpaint.setColor(Color.GREEN);
-            interiorpaint.setAntiAlias(true);*/
-            drawCanvas.drawRect(X,Y,X+width,Y+height,exteriorpaint);
-            //  drawView.drawCanvas.drawRect(centerX+padding,centerY+padding,centerX+WIDTH-padding,centerY+HEIGHT-padding,interiorpaint);
-            invalidate();
-            posX=X;posY=Y;WIDTH=width;HEIGHT=height;
-            scanned=true;
-            draw=false;
-        }
-        else{
-            Paint interiorpaint = new Paint();
-            interiorpaint.setStyle(Paint.Style.STROKE);
-            interiorpaint.setStrokeWidth(pad);
-            interiorpaint.setAntiAlias(true);
-            interiorpaint.setColor(Color.WHITE);
-            drawCanvas.drawRect(posX,posY,posX+WIDTH,posY+HEIGHT,interiorpaint);
-            invalidate();
-            scanned=false;
-        }
-
     }
 }

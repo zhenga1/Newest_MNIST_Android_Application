@@ -2,6 +2,7 @@ package com.example.practice_touch_screen_application;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -13,15 +14,18 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -31,9 +35,13 @@ import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private DrawingView drawView;
-    private final int WIDTH=400,HEIGHT=400,padding=50;
-    private Button erase, start, end,save,restore,scan;
+    private int WIDTH,HEIGHT,padding;
+    private boolean scanned=false;
+    private Button erase, start, end,save,restore,scan,plus,minus;
     private ImageButton currPaint;
+    private ImageView imageView;
+    private float posX,posY,dX,dY;
+    private ConstraintLayout constraintLayout;
     private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0;
     private LinearLayout linearlayout;
 
@@ -57,6 +65,109 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         restore.setOnClickListener(this);
         currPaint = (ImageButton) linearlayout.getChildAt(0);
         currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
+        initscanfeatures();
+    }
+    private void initscanfeatures(){
+        constraintLayout = (ConstraintLayout)findViewById(R.id.content_view);
+        imageView = new ImageView(MainActivity.this);
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) drawView.getLayoutParams();
+        imageView.setImageResource(R.mipmap.scanning_foreground);
+        ConstraintLayout.LayoutParams newparams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        newparams.leftToLeft=params.leftToLeft;
+        newparams.rightToRight=params.rightToRight;
+        newparams.topToBottom=params.topToBottom;
+        newparams.bottomToTop=params.bottomToTop;
+        imageView.setLayoutParams(newparams);
+        imageView.setId(imageView.generateViewId());
+        posX = imageView.getX(); posY=imageView.getY();
+        WIDTH=imageView.getMaxWidth();HEIGHT=imageView.getMaxHeight();
+        View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                if(view.getId()==imageView.getId()){
+                    float touchX=event.getX();
+                    float touchY=event.getY();
+                    if(touchX<=posX+WIDTH && touchX>=posX)
+                    {
+                        if(touchY<=posY+HEIGHT && touchY>=posY)
+                        {
+                            switch (event.getAction()) {
+                                case MotionEvent.ACTION_DOWN:
+                                    dX=view.getX()-event.getRawX();
+                                    dY=view.getY()-event.getRawY();
+                                    break;
+                                case MotionEvent.ACTION_MOVE:
+                                    view.animate()
+                                            .x(dX+event.getRawX())
+                                            .y(dY+event.getRawY())
+                                            .setDuration(0)
+                                            .start();
+
+                                    break;
+                                case MotionEvent.ACTION_UP:
+                                    dX=0;dY=0;
+                                    break;
+                                default:
+                                    return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+        };
+        imageView.setOnTouchListener(onTouchListener);
+        imageView.setVisibility(View.GONE);
+        constraintLayout.addView(imageView, -1);
+        LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.bottomToBottom=drawView.getId();
+        layoutParams.leftToLeft=params.leftToLeft;
+        layoutParams.rightToRight=params.rightToRight;
+
+        linearLayout.setLayoutParams(layoutParams);
+        plus = new Button(MainActivity.this);
+        plus.setId(View.generateViewId());
+        plus.setPadding(0,0,0,0);
+        plus.setBackgroundColor(Color.WHITE);
+        plus.setTextColor(Color.BLACK);
+        plus.setText("+");
+        plus.setTextSize(20);
+        minus = new Button(MainActivity.this);
+        minus.setPadding(0,0,0,0);
+        minus.setId(View.generateViewId());
+        minus.setBackgroundColor(Color.WHITE);
+        minus.setTextColor(Color.BLACK);
+        minus.setText("-");
+        minus.setTextSize(20);
+        linearLayout.addView(plus,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT));
+        linearLayout.addView(minus,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT));
+        View.OnClickListener onScaleClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(view.getId()==plus.getId())
+                {
+                    imageView.getLayoutParams().height=300;
+                    imageView.getLayoutParams().width=300;
+                    imageView.requestLayout();
+                    //INCREASE THE SIZE OF THE SCANNING IMAGE THING
+
+                }else if(view.getId()==minus.getId()){
+                    HEIGHT= (int) (HEIGHT*5/6);
+                    imageView.getLayoutParams().height=HEIGHT;
+                    WIDTH= (int) (WIDTH*5/6);
+                    imageView.getLayoutParams().width=WIDTH;
+                    imageView.requestLayout();
+                    //DECREASE THE SIZE OF THE SCANNING IMAGE THING
+
+                }
+            }
+        };
+        plus.setOnClickListener(onScaleClick);
+        minus.setOnClickListener(onScaleClick);
+        constraintLayout.addView(linearLayout,-1);
     }
     public void paintClicked(View v)
     {
@@ -100,12 +211,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
         }else if(view.getId()==scan.getId()){
-            int centerX = (int)this.getWindowManager().getDefaultDisplay().getWidth()/4;
-            int centerY = (int)this.getWindowManager().getDefaultDisplay().getHeight()/4;
-            try{
-                drawView.startscan(padding,centerX,centerY,WIDTH,HEIGHT);
-            }catch( Exception e){
-                e.printStackTrace();
+            if(!scanned) {
+                scanned=true;
+                imageView.setVisibility(View.VISIBLE);
+            }
+            else{
+                imageView.setVisibility(View.GONE);
+                scanned=false;
             }
         }
     }
