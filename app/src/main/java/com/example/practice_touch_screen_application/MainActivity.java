@@ -45,8 +45,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean scanned=false,firstscale=true,isize=true, dsize=true;
     private Button erase, start, end,save,restore,scan,plus,minus,capture;
     private ImageButton currPaint;
-    private final File folderi = new File("/sdcard/Touch_app/images");
-    private final File folders = new File("/sdcard/Touch_app/screen_shot");
     private ImageView imageView;
     private float posX,posY,dX,dY;
     private ConstraintLayout constraintLayout;
@@ -162,22 +160,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             "for more information",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Toast.makeText(getApplicationContext(),"Sucessfully captured the image",Toast.LENGTH_SHORT).show();
                 if(savePermissions()){
-                    try{
-                        if(!folders.exists()) {
-                            folders.mkdir();
-                        }
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                    File file = new File(folders, "Screenshot"+Integer.toString(scrnnum)+".jpg");
+                    File file = new File(Environment.getExternalStorageDirectory()+"/Screenshot"+ Integer.toString(scrnnum)+".jpg");
                     try {
                         screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     scrnnum+=1;
+                    Toast.makeText(getApplicationContext(),"Sucessfully captured and saved image",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getApplicationContext(),"Cannot save image, it is necessary.",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -276,11 +269,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         "save permissions not granted",Toast.LENGTH_SHORT).show();
             }
         }else if(view.getId()==restore.getId()) {
-            File file = new File(folderi,"Image" + Integer.toString(number - 1) + ".jpg");
+            File file = new File(Environment.getExternalStorageDirectory() + "/Image" + Integer.toString(number - 1) + ".jpg");
             while(!file.exists() && number!=0)
             {
                 number-=1;
-                file = new File(folderi,"Image" + Integer.toString(number - 1) + ".jpg");
+                file = new File(Environment.getExternalStorageDirectory() + "/Image" + Integer.toString(number - 1) + ".jpg");
             }
             if(number==0 || !file.exists()){
                 Toast.makeText(getApplicationContext(),"Nothing is made yet",Toast.LENGTH_SHORT).show();
@@ -311,14 +304,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void savefile(){
-        try{
-            if(!folderi.exists()) {
-                folderi.mkdir();
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        File file = new File(folderi,"Image"+ Integer.toString(number)+".jpg");
+        File file = new File(Environment.getExternalStorageDirectory()+"/Image"+ Integer.toString(number)+".jpg");
         try {
             drawView.canvasBitmap.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
         } catch (Exception e) {
