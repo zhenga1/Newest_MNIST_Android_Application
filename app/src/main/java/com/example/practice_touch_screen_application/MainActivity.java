@@ -19,6 +19,7 @@ import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,7 +38,7 @@ import java.io.FileOutputStream;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private DrawingView drawView;
     private int WIDTH,HEIGHT,padding;
-    private boolean scanned=false,firstscale=true;
+    private boolean scanned=false,firstscale=true,isize=true, dsize=true;
     private Button erase, start, end,save,restore,scan,plus,minus;
     private ImageButton currPaint;
     private ImageView imageView;
@@ -153,14 +154,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     imageView.getLayoutParams().height = imageView.getHeight();
                     firstscale=false;
                 }
-                if(view.getId()==plus.getId())
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int theight = displayMetrics.heightPixels; int twidth = displayMetrics.widthPixels;
+                if(imageView.getLayoutParams().height>=theight || imageView.getLayoutParams().width>=twidth){
+                    Toast.makeText(getApplicationContext(),"The scanning block cannot be expanded further",Toast.LENGTH_LONG).show();
+                    isize=false;
+                }
+                if(imageView.getLayoutParams().height<=0 || imageView.getLayoutParams().width<=0){
+                    Toast.makeText(getApplicationContext(),"The scanning block cannot be decreased in size further",Toast.LENGTH_LONG).show();
+                    dsize=false;
+                }
+                if(view.getId()==plus.getId() && isize)
                 {
+                    dsize=true;
                     imageView.getLayoutParams().height=imageView.getLayoutParams().height+50;
                     imageView.getLayoutParams().width=imageView.getLayoutParams().width+50;
                     imageView.requestLayout();
                     //INCREASE THE SIZE OF THE SCANNING IMAGE THING
 
-                }else if(view.getId()==minus.getId()){
+                }else if(view.getId()==minus.getId() && dsize){
+                    isize=true;
                     imageView.getLayoutParams().height=imageView.getLayoutParams().height-50;
                     imageView.getLayoutParams().width=imageView.getLayoutParams().width-50;
                     imageView.requestLayout();
