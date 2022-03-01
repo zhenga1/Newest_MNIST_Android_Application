@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -14,6 +15,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.opengl.Visibility;
 import android.os.Build;
@@ -21,6 +24,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -41,10 +45,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean scanned=false,firstscale=true,isize=true, dsize=true;
     private Button erase, start, end,save,restore,scan,plus,minus,capture;
     private ImageButton currPaint;
+    private final File folderi = new File("/sdcard/Touch_app/images");
+    private final File folders = new File("/sdcard/Touch_app/screen_shot");
     private ImageView imageView;
     private float posX,posY,dX,dY;
     private ConstraintLayout constraintLayout;
-    private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0;
+    private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0,scrnnum=0;
     private LinearLayout linearlayout;
 
     @Override
@@ -68,6 +74,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         currPaint = (ImageButton) linearlayout.getChildAt(0);
         currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
         initscanfeatures();
+    }
+    private Bitmap takescreenshot(int x, int y, int width,int height){
+        Activity pActivity = MainActivity.this;
+        View view = pActivity.getWindow().getDecorView();
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();
+        Bitmap bitmap = view.getDrawingCache();
+        return Bitmap.createBitmap(bitmap, x, y, width, height);
     }
     private void initscanfeatures(){
         constraintLayout = (ConstraintLayout)findViewById(R.id.content_view);
@@ -138,7 +152,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                int width = view.getWidth();
+                int height = view.getHeight();
+                int[] p = new int[2]; view.getLocationOnScreen(p);
+                Bitmap screenshot = takescreenshot(p[0],p[1],width,height);
+                if(screenshot==null){
+                    Toast.makeText(getApplicationContext(),"Image capture has failed for " +
+                            "an unknown reason. Please consult the great developer Aaron Haowen Zheng " +
+                            "for more information",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(getApplicationContext(),"Sucessfully captured the image",Toast.LENGTH_SHORT).show();
+                if(savePermissions()){
+                    try{
+                        if(!folders.exists()) {
+                            folders.mkdir();
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                    File file = new File(folders, "Screenshot"+Integer.toString(scrnnum)+".jpg");
+                    try {
+                        screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    scrnnum+=1;
+                }
             }
         });
 
@@ -231,12 +271,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             {
                 savefile();
             }
+            else{
+                Toast.makeText(getApplicationContext(),"Application cannot save.Required " +
+                        "save permissions not granted",Toast.LENGTH_SHORT).show();
+            }
         }else if(view.getId()==restore.getId()) {
-            File file = new File(Environment.getExternalStorageDirectory() + "/Image" + Integer.toString(number - 1) + ".jpg");
+            File file = new File(folderi,"Image" + Integer.toString(number - 1) + ".jpg");
             while(!file.exists() && number!=0)
             {
                 number-=1;
-                file = new File(Environment.getExternalStorageDirectory() + "/Image" + Integer.toString(number - 1) + ".jpg");
+                file = new File(folderi,"Image" + Integer.toString(number - 1) + ".jpg");
             }
             if(number==0 || !file.exists()){
                 Toast.makeText(getApplicationContext(),"Nothing is made yet",Toast.LENGTH_SHORT).show();
@@ -267,7 +311,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void savefile(){
-        File file = new File(Environment.getExternalStorageDirectory()+"/Image"+ Integer.toString(number)+".jpg");
+        try{
+            if(!folderi.exists()) {
+                folderi.mkdir();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        File file = new File(folderi,"Image"+ Integer.toString(number)+".jpg");
         try {
             drawView.canvasBitmap.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
         } catch (Exception e) {
