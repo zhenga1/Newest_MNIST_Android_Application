@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DrawingView drawView;
     private int WIDTH,HEIGHT,padding;
     private boolean scanned=false,firstscale=true,isize=true, dsize=true;
-    private Button erase, start, end,save,restore,scan,plus,minus;
+    private Button erase, start, end,save,restore,scan,plus,minus,capture;
     private ImageButton currPaint;
     private ImageView imageView;
     private float posX,posY,dX,dY;
@@ -122,13 +122,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageView.setOnTouchListener(onTouchListener);
         imageView.setVisibility(View.GONE);
         constraintLayout.addView(imageView, -1);
+
+        capture = new Button(MainActivity.this);
+        capture.setVisibility(View.GONE);
+        capture.setBackgroundColor(Color.MAGENTA);
+        capture.setTextColor(Color.BLACK);
+        capture.setId(View.generateViewId());
+        capture.setPadding(20,20,20,20);
+        capture.setText("Capture Area");
+        ConstraintLayout.LayoutParams capParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        capParams.rightToRight=constraintLayout.getId();
+        capParams.leftToLeft=constraintLayout.getId();
+        capParams.topToTop=drawView.getId();
+        constraintLayout.addView(capture,-1,capParams);
+        capture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
         linearLayout.setOrientation(LinearLayout.HORIZONTAL);
         ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.bottomToBottom=drawView.getId();
         layoutParams.leftToLeft=params.leftToLeft;
         layoutParams.rightToRight=params.rightToRight;
-
         linearLayout.setLayoutParams(layoutParams);
         plus = new Button(MainActivity.this);
         plus.setId(View.generateViewId());
@@ -185,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         plus.setOnClickListener(onScaleClick);
         minus.setOnClickListener(onScaleClick);
+        plus.setVisibility(View.GONE);
+        minus.setVisibility(View.GONE);
         constraintLayout.addView(linearLayout,-1);
     }
     public void paintClicked(View v)
@@ -231,11 +252,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else if(view.getId()==scan.getId()){
             if(!scanned) {
                 scanned=true;
+                capture.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
+                plus.setVisibility(View.VISIBLE);
+                minus.setVisibility(View.VISIBLE);
             }
             else{
-                imageView.setVisibility(View.GONE);
                 scanned=false;
+                imageView.setVisibility(View.GONE);
+                capture.setVisibility(View.GONE);
+                plus.setVisibility(View.GONE);
+                minus.setVisibility(View.GONE);
             }
         }
     }
