@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.practice_touch_screen_application"
-        minSdkVersion 17
+        minSdkVersion 19
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
@@ -26,10 +26,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    aaptOptions{
+        noCompress "tflite"
+        noCompress "lite"
+    }
 }
-
 dependencies {
-
+    implementation 'org.tensorflow:tensorflow-lite:+'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0-rc1'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'

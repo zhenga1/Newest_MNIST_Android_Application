@@ -1,34 +1,16 @@
 package com.example.practice_touch_screen_application;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
-import android.view.View;
-
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -36,8 +18,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -154,7 +141,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 int width = imageView.getWidth();
                 int height = imageView.getHeight();
                 int[] p = new int[2]; imageView.getLocationOnScreen(p);
-                Bitmap screenshot = takescreenshot(p[0],p[1],width,height);
+                int xcoord = (int) (p[0]+Math.round(width*0.08));
+                int ycoord = (int) (p[1]+Math.round(height*0.08));
+                int awidth = (int) (Math.round(width*0.84));
+                int aheight = (int) (Math.round(height*0.84));
+                Bitmap screenshot = takescreenshot(xcoord,ycoord,awidth,aheight);
+                //Bitmap screenshot = takescreenshot(p[0]+60,p[1]+60,width-120,height-120);
+
                 if(screenshot==null){
                     Toast.makeText(getApplicationContext(),"Image capture has failed for " +
                             "an unknown reason. Please consult the great developer Aaron Haowen Zheng " +

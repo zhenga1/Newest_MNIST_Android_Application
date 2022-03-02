@@ -2,16 +2,12 @@ package com.example.practice_touch_screen_application;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class CustomDialog extends Dialog implements View.OnClickListener{
     public Activity activity;
@@ -23,9 +19,10 @@ public class CustomDialog extends Dialog implements View.OnClickListener{
         super(a);
         activity=a;
     }
-    public CustomDialog(Activity a,String string) {
+    public CustomDialog(Activity a,String s) {
         super(a);
         activity=a;
+        string = s;
 
     }
 
