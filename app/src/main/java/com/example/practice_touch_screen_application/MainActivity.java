@@ -150,9 +150,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int width = view.getWidth();
-                int height = view.getHeight();
-                int[] p = new int[2]; view.getLocationOnScreen(p);
+                int width = imageView.getWidth();
+                int height = imageView.getHeight();
+                int[] p = new int[2]; imageView.getLocationOnScreen(p);
                 Bitmap screenshot = takescreenshot(p[0],p[1],width,height);
                 if(screenshot==null){
                     Toast.makeText(getApplicationContext(),"Image capture has failed for " +
@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }else{
                     Toast.makeText(getApplicationContext(),"Cannot save image, it is necessary.",Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
