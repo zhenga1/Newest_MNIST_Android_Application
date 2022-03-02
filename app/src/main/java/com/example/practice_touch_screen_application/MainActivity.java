@@ -305,12 +305,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void savefile(){
+        int width = drawView.getWidth();
+        int height = drawView.getHeight();
+        int[] p = new int[2]; drawView.getLocationOnScreen(p);
+        Bitmap screenshot = takescreenshot(p[0],p[1],width,height);
+        if(screenshot==null){
+            Toast.makeText(getApplicationContext(),"Image capture has failed for " +
+                    "an unknown reason. Please consult the great developer Aaron Haowen Zheng " +
+                    "for more information",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         File file = new File(Environment.getExternalStorageDirectory()+"/Image"+ Integer.toString(number)+".jpg");
         try {
-            drawView.canvasBitmap.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
+            screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Toast.makeText(getApplicationContext(),"Sucessfully captured and saved canvas capture",Toast.LENGTH_SHORT).show();
         number+=1;
     }
     private boolean savePermissions(){
