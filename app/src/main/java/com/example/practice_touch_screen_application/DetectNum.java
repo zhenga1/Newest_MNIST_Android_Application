@@ -62,6 +62,17 @@ public class DetectNum extends AppCompatActivity {
         Tensor outputTensor = interpreter.getOutputTensor(0);
         TensorBuffer outputBuffer= TensorBuffer.createFixedSize(outputTensor.shape(),outputTensor.dataType());
         interpreter.run(compressedBuffer,outputBuffer.getBuffer().rewind());
+        float[] floatarray = outputBuffer.getFloatArray();
+        float[] maxlist = new float[2];
+        maxlist[0]=0f;maxlist[1]=0f;
+        for(int i=0;i<floatarray.length;i++){
+            if(maxlist[0]<floatarray[i]){
+                maxlist[0]=floatarray[i];
+                maxlist[1]=i;
+            }
+        }
+        int pred = (int)maxlist[1];
+        result.setText(String.valueOf(pred));
     }
     private MappedByteBuffer loadModelFile() throws IOException
     {
