@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -169,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     scrnnum+=1;
                     Toast.makeText(getApplicationContext(),"Sucessfully captured and saved image",Toast.LENGTH_SHORT).show();
+                    CustomDialog customDialog = new CustomDialog(MainActivity.this,file.getAbsolutePath());
+                    customDialog.show();
                 }else{
                     Toast.makeText(getApplicationContext(),"Cannot save image, it is necessary.",Toast.LENGTH_SHORT).show();
                 }
@@ -252,6 +255,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             drawView.setColor(color);
         }
     }
+    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==CustomDialog.DIALOG_REQUEST){
+            if(resultCode==Activity.RESULT_OK){
+                Toast.makeText(getApplicationContext(),"Success",Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
     public void onClick(View view){
         if(view.getId()==start.getId()) {
             drawView.startdrawing(true);
@@ -305,24 +317,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void savefile(){
-        int width = drawView.getWidth();
-        int height = drawView.getHeight();
-        int[] p = new int[2]; drawView.getLocationOnScreen(p);
-        Bitmap screenshot = takescreenshot(p[0],p[1],width,height);
-        if(screenshot==null){
-            Toast.makeText(getApplicationContext(),"Image capture has failed for " +
-                    "an unknown reason. Please consult the great developer Aaron Haowen Zheng " +
-                    "for more information",Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         File file = new File(Environment.getExternalStorageDirectory()+"/Image"+ Integer.toString(number)+".jpg");
         try {
-            screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
+            drawView.canvasBitmap.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Toast.makeText(getApplicationContext(),"Sucessfully captured and saved canvas capture",Toast.LENGTH_SHORT).show();
         number+=1;
     }
     private boolean savePermissions(){
