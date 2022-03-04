@@ -89,16 +89,17 @@ public class DetectNum extends AppCompatActivity {
         bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
         for (int i=0;i<inputTensor.shape()[1]*inputTensor.shape()[2];i++) {
             int pixel = pixels[i];
-            compressedBuffer.putFloat(1.0f-convertPixel(pixel));
+            int val=convertPixel(pixel);
+            compressedBuffer.putInt(val);
         }
     }
-    private float convertPixel(int pixel){
+    private int convertPixel(int pixel){
         float rChannel = (pixel >> 16) & 0xFF;
         float gChannel = (pixel >> 8) & 0xFF;
         float bChannel = (pixel) & 0xFF;
-        float pixelValue = ((rChannel + gChannel + bChannel) / 3 / 255f);
-        pixelValue=Math.min(pixelValue,1.0f);
-        pixelValue=Math.max(pixelValue,0.0f);
+        int pixelValue = (int)((rChannel + gChannel + bChannel) / 3 );
+        pixelValue=Math.min(pixelValue,255);
+        pixelValue=Math.max(pixelValue,0);
         return pixelValue;
     }
     private MappedByteBuffer loadModelFile() throws IOException
