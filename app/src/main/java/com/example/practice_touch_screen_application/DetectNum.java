@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.Tensor;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
@@ -27,6 +29,9 @@ import java.nio.channels.FileChannel;
 public class DetectNum extends AppCompatActivity {
     private ImageView imageView;
     private TextView result;
+    private int[] pixels;
+    private TensorBuffer inputFeature = TensorBuffer.createFixedSize(new int[]{1, 28, 28,1}, DataType.FLOAT32);
+    private ByteBuffer compressedBuffer;
     private Interpreter interpreter;
 
     @Override
@@ -56,12 +61,15 @@ public class DetectNum extends AppCompatActivity {
         }
         Bitmap imageBitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(imageBitmap,28,28,false);
-        int imageSize = scaledBitmap.getRowBytes() * scaledBitmap.getHeight();
-        ByteBuffer compressedBuffer = ByteBuffer.allocateDirect(imageSize);
-        scaledBitmap.copyPixelsToBuffer(compressedBuffer);
+        Log.i("thing",Integer.toString(scaledBitmap.getByteCount()));
+        int imageSize = scaledBitmap.getHeight() * scaledBitmap.getWidth();
+        compressedBuffer = ByteBuffer.allocateDirect(imageSize*4);
+        compressedBuffer.rewind();
+        convertBitmaptoByteBuffer(scaledBitmap);
         Tensor outputTensor = interpreter.getOutputTensor(0);
         TensorBuffer outputBuffer= TensorBuffer.createFixedSize(outputTensor.shape(),outputTensor.dataType());
-        interpreter.run(compressedBuffer,outputBuffer.getBuffer().rewind());
+        inputFeature.loadBuffer(compressedBuffer,new int[]{1,28,28,1});
+        interpreter.run(inputFeature.getBuffer(),outputBuffer.getBuffer().rewind());
         float[] floatarray = outputBuffer.getFloatArray();
         float[] maxlist = new float[2];
         maxlist[0]=0f;maxlist[1]=0f;
@@ -74,6 +82,25 @@ public class DetectNum extends AppCompatActivity {
         int pred = (int)maxlist[1];
         result.setText(String.valueOf(pred));
     }
+    private void convertBitmaptoByteBuffer(Bitmap bitmap){
+        compressedBuffer.rewind();
+        Tensor inputTensor = interpreter.getInputTensor(0);
+        pixels = new int[inputTensor.shape()[1]*inputTensor.shape()[2]];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        for (int i=0;i<inputTensor.shape()[1]*inputTensor.shape()[2];i++) {
+            int pixel = pixels[i];
+            compressedBuffer.putFloat(1.0f-convertPixel(pixel));
+        }
+    }
+    private float convertPixel(int pixel){
+        float rChannel = (pixel >> 16) & 0xFF;
+        float gChannel = (pixel >> 8) & 0xFF;
+        float bChannel = (pixel) & 0xFF;
+        float pixelValue = ((rChannel + gChannel + bChannel) / 3 / 255f);
+        pixelValue=Math.min(pixelValue,1.0f);
+        pixelValue=Math.max(pixelValue,0.0f);
+        return pixelValue;
+    }
     private MappedByteBuffer loadModelFile() throws IOException
     {
         AssetFileDescriptor assetFileDescriptor = this.getAssets().openFd("mnist.tflite");
@@ -81,7 +108,7 @@ public class DetectNum extends AppCompatActivity {
         FileChannel fileChannel = fileInputStream.getChannel();
 
         long startOffset = assetFileDescriptor.getStartOffset();
-        long len = assetFileDescriptor.getLength();
+        long len = assetFileDescriptor.getDeclaredLength();
         return fileChannel.map(FileChannel.MapMode.READ_ONLY,startOffset,len);
 
     }

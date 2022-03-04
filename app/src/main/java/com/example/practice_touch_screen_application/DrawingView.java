@@ -1,18 +1,18 @@
 package com.example.practice_touch_screen_application;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.view.MotionEvent;
+import android.view.View;
+
 import androidx.annotation.Nullable;
 
 import java.io.File;
@@ -51,7 +51,7 @@ public class DrawingView extends View {
         drawPaint = new Paint();
         drawPaint.setColor(paintColor);
         drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(20);
+        drawPaint.setStrokeWidth(30);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -122,7 +122,7 @@ public class DrawingView extends View {
         }
         else {
             drawPaint.setXfermode(null);
-            drawPaint.setStrokeWidth(20);
+            drawPaint.setStrokeWidth(30);
             draw=true;
         }
     }

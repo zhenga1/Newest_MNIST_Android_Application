@@ -62,11 +62,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initscanfeatures();
     }
     private Bitmap takescreenshot(int x, int y, int width,int height){
-        Activity pActivity = MainActivity.this;
-        View view = pActivity.getWindow().getDecorView();
+        View view = this.getWindow().getDecorView();
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
-        Bitmap bitmap = view.getDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
         return Bitmap.createBitmap(bitmap, x, y, width, height);
     }
     private void initscanfeatures(){
