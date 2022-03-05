@@ -64,7 +64,6 @@ public class DetectNum extends AppCompatActivity {
         Log.i("thing",Integer.toString(scaledBitmap.getByteCount()));
         int imageSize = scaledBitmap.getHeight() * scaledBitmap.getWidth();
         compressedBuffer = ByteBuffer.allocateDirect(imageSize*4);
-        compressedBuffer.rewind();
         convertBitmaptoByteBuffer(scaledBitmap);
         Tensor outputTensor = interpreter.getOutputTensor(0);
         TensorBuffer outputBuffer= TensorBuffer.createFixedSize(outputTensor.shape(),outputTensor.dataType());
@@ -89,18 +88,18 @@ public class DetectNum extends AppCompatActivity {
         bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
         for (int i=0;i<inputTensor.shape()[1]*inputTensor.shape()[2];i++) {
             int pixel = pixels[i];
-            int val=convertPixel(pixel);
-            compressedBuffer.putInt(val);
+            float val=convertPixel(pixel);
+            compressedBuffer.putFloat(val);
         }
     }
-    private int convertPixel(int pixel){
+    private float convertPixel(int pixel){
         float rChannel = (pixel >> 16) & 0xFF;
         float gChannel = (pixel >> 8) & 0xFF;
         float bChannel = (pixel) & 0xFF;
         int pixelValue = (int)((rChannel + gChannel + bChannel) / 3 );
         pixelValue=Math.min(pixelValue,255);
         pixelValue=Math.max(pixelValue,0);
-        return pixelValue;
+        return 1.0f-pixelValue/255f;
     }
     private MappedByteBuffer loadModelFile() throws IOException
     {

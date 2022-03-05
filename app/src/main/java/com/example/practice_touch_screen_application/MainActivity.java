@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView imageView;
     private float posX,posY,dX,dY;
     private ConstraintLayout constraintLayout;
-    private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0,scrnnum=0;
+    private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0,scrnnum=58;
     private LinearLayout linearlayout;
 
     @Override
@@ -155,16 +155,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 if(savePermissions()){
-                    File file = new File(Environment.getExternalStorageDirectory()+"/Screenshot"+ Integer.toString(scrnnum)+".jpg");
-                    try {
-                        screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    File folder = new File(Environment.getExternalStorageDirectory()+"/practice_app");
+                    boolean success=true;
+                    File file;
+                    if(!folder.exists()) success = folder.mkdir();
+                    if(success){
+                        file = new File(Environment.getExternalStorageDirectory()+"/practice_app/"+ Integer.toString(scrnnum)+".jpg");
+                        try {
+                            screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        scrnnum+=1;
+                        Toast.makeText(getApplicationContext(),"Sucessfully captured and saved image",Toast.LENGTH_SHORT).show();
+                        CustomDialog customDialog = new CustomDialog(MainActivity.this,file.getAbsolutePath());
+                        customDialog.show();
                     }
-                    scrnnum+=1;
-                    Toast.makeText(getApplicationContext(),"Sucessfully captured and saved image",Toast.LENGTH_SHORT).show();
-                    CustomDialog customDialog = new CustomDialog(MainActivity.this,file.getAbsolutePath());
-                    customDialog.show();
                 }else{
                     Toast.makeText(getApplicationContext(),"Cannot save image, it is necessary.",Toast.LENGTH_SHORT).show();
                 }
