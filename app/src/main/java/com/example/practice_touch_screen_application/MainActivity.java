@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView imageView;
     private float posX,posY,dX,dY;
     private ConstraintLayout constraintLayout;
-    private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0,scrnnum=58;
+    private int WRITE_REQUEST_CODE=100,READ_REQUEST_CODE=200,number=0,scrnnum=110;
     private LinearLayout linearlayout;
 
     @Override
@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     File file;
                     if(!folder.exists()) success = folder.mkdir();
                     if(success){
-                        file = new File(Environment.getExternalStorageDirectory()+"/practice_app/"+ Integer.toString(scrnnum)+".jpg");
+                        file = getreqdscrnfile();
                         try {
                             screenshot.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
                         } catch (Exception e) {
@@ -243,6 +243,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         plus.setVisibility(View.GONE);
         minus.setVisibility(View.GONE);
         constraintLayout.addView(linearLayout,-1);
+    }
+    public File getreqdscrnfile(){
+        File file = new File(Environment.getExternalStorageDirectory()+"/practice_app/"+ Integer.toString(scrnnum)+".jpg");
+        while(file.exists()){
+            scrnnum+=1;
+            file = new File(Environment.getExternalStorageDirectory()+"/practice_app/"+ Integer.toString(scrnnum)+".jpg");
+        }
+        return file;
     }
     public void paintClicked(View v)
     {

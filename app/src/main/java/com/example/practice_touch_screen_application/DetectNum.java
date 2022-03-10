@@ -3,6 +3,7 @@ package com.example.practice_touch_screen_application;
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -29,8 +30,8 @@ import java.nio.channels.FileChannel;
 public class DetectNum extends AppCompatActivity {
     private ImageView imageView;
     private TextView result;
+    private int[] array;
     private int[] pixels;
-    private TensorBuffer inputFeature = TensorBuffer.createFixedSize(new int[]{1, 28, 28,1}, DataType.FLOAT32);
     private ByteBuffer compressedBuffer;
     private Interpreter interpreter;
 
@@ -62,11 +63,28 @@ public class DetectNum extends AppCompatActivity {
         Bitmap imageBitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(imageBitmap,28,28,false);
         Log.i("thing",Integer.toString(scaledBitmap.getByteCount()));
-        int imageSize = scaledBitmap.getHeight() * scaledBitmap.getWidth();
+        Tensor inputTensor = interpreter.getInputTensor(0);
+        pixels = new int[inputTensor.shape()[1]*inputTensor.shape()[2]];
+        array = new int[28*28];
+        scaledBitmap.getPixels(pixels, 0, scaledBitmap.getWidth(), 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight());
+        for(int i=0;i<scaledBitmap.getWidth();i++){
+            for(int j=0;j<scaledBitmap.getHeight();j++){
+                int r = Color.red(pixels[28*i+j]);
+                int g = Color.green(pixels[28*i+j]);
+                int b = Color.blue(pixels[28*i+j]);
+                int avg = (r + g + b) / 3;
+                int newColor = Color.argb(255, 255 - avg, 255 - avg, 255 - avg);
+                array[28*i+j] = (newColor);
+            }
+        }
+        Bitmap newbitmap = scaledBitmap.copy(scaledBitmap.getConfig(),true);
+        newbitmap.setPixels(array,0,scaledBitmap.getWidth(),0,0,scaledBitmap.getWidth(),scaledBitmap.getHeight());
+        int imageSize = 28*28;
         compressedBuffer = ByteBuffer.allocateDirect(imageSize*4);
-        convertBitmaptoByteBuffer(scaledBitmap);
+        convertBitmaptoByteBuffer();
         Tensor outputTensor = interpreter.getOutputTensor(0);
         TensorBuffer outputBuffer= TensorBuffer.createFixedSize(outputTensor.shape(),outputTensor.dataType());
+        TensorBuffer inputFeature = TensorBuffer.createFixedSize(new int[]{1, 28, 28,1}, DataType.FLOAT32);
         inputFeature.loadBuffer(compressedBuffer,new int[]{1,28,28,1});
         interpreter.run(inputFeature.getBuffer(),outputBuffer.getBuffer().rewind());
         float[] floatarray = outputBuffer.getFloatArray();
@@ -81,25 +99,16 @@ public class DetectNum extends AppCompatActivity {
         int pred = (int)maxlist[1];
         result.setText(String.valueOf(pred));
     }
-    private void convertBitmaptoByteBuffer(Bitmap bitmap){
+    private void convertBitmaptoByteBuffer(){
         compressedBuffer.rewind();
-        Tensor inputTensor = interpreter.getInputTensor(0);
-        pixels = new int[inputTensor.shape()[1]*inputTensor.shape()[2]];
-        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-        for (int i=0;i<inputTensor.shape()[1]*inputTensor.shape()[2];i++) {
-            int pixel = pixels[i];
-            float val=convertPixel(pixel);
-            compressedBuffer.putFloat(val);
+        for (int i=0;i<28*28;i++) {
+            int pixel = array[i];
+            float r = (pixel >> 16) & 0xFF;
+            float g = (pixel >> 8) & 0xFF;
+            float b = (pixel) & 0xFF;
+            float normalizedpixel = (r+g+b)/3.0f / 255.0f;
+            compressedBuffer.putFloat(normalizedpixel);
         }
-    }
-    private float convertPixel(int pixel){
-        float rChannel = (pixel >> 16) & 0xFF;
-        float gChannel = (pixel >> 8) & 0xFF;
-        float bChannel = (pixel) & 0xFF;
-        int pixelValue = (int)((rChannel + gChannel + bChannel) / 3 );
-        pixelValue=Math.min(pixelValue,255);
-        pixelValue=Math.max(pixelValue,0);
-        return 1.0f-pixelValue/255f;
     }
     private MappedByteBuffer loadModelFile() throws IOException
     {
