@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -32,6 +33,7 @@ public class DetectNum extends AppCompatActivity {
     private TextView result;
     private int[] array;
     private int[] pixels;
+    private float[][] outputarr = new float[1][10];
     private ByteBuffer compressedBuffer;
     private Interpreter interpreter;
 
@@ -81,18 +83,19 @@ public class DetectNum extends AppCompatActivity {
         newbitmap.setPixels(array,0,scaledBitmap.getWidth(),0,0,scaledBitmap.getWidth(),scaledBitmap.getHeight());
         int imageSize = 28*28;
         compressedBuffer = ByteBuffer.allocateDirect(imageSize*4);
+        compressedBuffer.order(ByteOrder.nativeOrder());
         convertBitmaptoByteBuffer();
         Tensor outputTensor = interpreter.getOutputTensor(0);
         TensorBuffer outputBuffer= TensorBuffer.createFixedSize(outputTensor.shape(),outputTensor.dataType());
         TensorBuffer inputFeature = TensorBuffer.createFixedSize(new int[]{1, 28, 28,1}, DataType.FLOAT32);
         inputFeature.loadBuffer(compressedBuffer,new int[]{1,28,28,1});
-        interpreter.run(inputFeature.getBuffer(),outputBuffer.getBuffer().rewind());
-        float[] floatarray = outputBuffer.getFloatArray();
+        interpreter.setNumThreads(2);
+        interpreter.run(compressedBuffer,outputarr);
         float[] maxlist = new float[2];
         maxlist[0]=0f;maxlist[1]=0f;
-        for(int i=0;i<floatarray.length;i++){
-            if(maxlist[0]<floatarray[i]){
-                maxlist[0]=floatarray[i];
+        for(int i=0;i<10;i++){
+            if(maxlist[0]<outputarr[0][i]){
+                maxlist[0]=outputarr[0][i];
                 maxlist[1]=i;
             }
         }
@@ -106,7 +109,8 @@ public class DetectNum extends AppCompatActivity {
             float r = (pixel >> 16) & 0xFF;
             float g = (pixel >> 8) & 0xFF;
             float b = (pixel) & 0xFF;
-            float normalizedpixel = (r+g+b)/3.0f / 255.0f;
+            float avgpixel = (r+g+b)/3.0f;
+            float normalizedpixel = avgpixel/ 255.0f;
             compressedBuffer.putFloat(normalizedpixel);
         }
     }
