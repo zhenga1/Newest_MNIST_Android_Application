@@ -2,6 +2,8 @@ package com.example.practice_touch_screen_application;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -27,10 +29,13 @@ import androidx.core.content.ContextCompat;
 import java.io.File;
 import java.io.FileOutputStream;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity<alertDialog> extends AppCompatActivity implements View.OnClickListener {
     private DrawingView drawView;
     private int WIDTH,HEIGHT,padding;
+    private AlertDialog alertDialog;
     private boolean scanned=false,firstscale=true,isize=true, dsize=true;
+    public static Bitmap scrnshotbitmap;
+    public static int theight,twidth;
     private Button erase, start, end,save,restore,scan,plus,minus,capture;
     private ImageButton currPaint;
     private ImageView imageView;
@@ -43,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        theight = displayMetrics.heightPixels; twidth = displayMetrics.widthPixels;
         drawView = (DrawingView)findViewById(R.id.drawing);
         linearlayout = findViewById(R.id.ll1);
         erase = (Button)findViewById(R.id.erase);
@@ -209,9 +217,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     imageView.getLayoutParams().height = imageView.getHeight();
                     firstscale=false;
                 }
-                DisplayMetrics displayMetrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                int theight = displayMetrics.heightPixels; int twidth = displayMetrics.widthPixels;
                 if(imageView.getLayoutParams().height>=theight || imageView.getLayoutParams().width>=twidth){
                     Toast.makeText(getApplicationContext(),"The scanning block cannot be expanded further",Toast.LENGTH_LONG).show();
                     isize=false;
@@ -307,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
         }else if(view.getId()==scan.getId()){
-            if(!scanned) {
+            /*if(!scanned) {
                 scanned=true;
                 capture.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
@@ -320,7 +325,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 capture.setVisibility(View.GONE);
                 plus.setVisibility(View.GONE);
                 minus.setVisibility(View.GONE);
-            }
+            }*/
+            AlertDialog.Builder alertbuilder = new AlertDialog.Builder(this)
+                    .setTitle("Scanning for image")
+                    .setMessage("Do you want to scan the image for digits?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            MainActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    alertDialog.dismiss();
+                                    int location[] = new int[2];
+                                    drawView.getLocationOnScreen(location);
+                                    scrnshotbitmap = takescreenshot(location[0],location[1],drawView.getWidth(),drawView.getHeight());
+                                    Intent intent = new Intent(MainActivity.this,DetectNum.class);
+                                    startActivityForResult(intent,CustomDialog.DIALOG_REQUEST);
+                                }
+                            });
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            MainActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    alertDialog.dismiss();
+                                }
+                            });
+                        }
+                    });
+            alertDialog = alertbuilder.show();
         }
     }
     private void savefile(){

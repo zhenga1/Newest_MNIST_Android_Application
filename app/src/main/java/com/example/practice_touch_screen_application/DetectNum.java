@@ -43,14 +43,21 @@ public class DetectNum extends AppCompatActivity {
         setContentView(R.layout.activity_detect);
         imageView = (ImageView) findViewById(R.id.imageview);
         result = (TextView) findViewById(R.id.result);
-        File file = new File(getIntent().getStringExtra("path"));
-        if(!file.exists()) return;
-        imageView.setImageDrawable(Drawable.createFromPath(file.toString()));
+        if(getIntent().hasExtra("path")) {
+            File file = new File(getIntent().getStringExtra("path"));
+            if (!file.exists()) return;
+            imageView.setImageDrawable(Drawable.createFromPath(file.toString()));
+        }
+        else {
+            Bitmap bitmap = Bitmap.createScaledBitmap(MainActivity.scrnshotbitmap,1080,1080,false);
+            imageView.setImageDrawable(new BitmapDrawable(getResources(),bitmap));
+        }
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) imageView.getLayoutParams();
         params.width = ConstraintLayout.LayoutParams.MATCH_PARENT;params.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         imageView.setLayoutParams(params);
         result.setText("Processing...");
         startmachinelearningmodel();
+
     }
     public void finishthing(View view){
         setResult(Activity.RESULT_OK);
