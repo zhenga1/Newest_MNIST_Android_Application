@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -338,9 +340,31 @@ public class MainActivity<alertDialog> extends AppCompatActivity implements View
                                     alertDialog.dismiss();
                                     int location[] = new int[2];
                                     drawView.getLocationOnScreen(location);
-                                    scrnshotbitmap = takescreenshot(location[0],location[1],drawView.getWidth(),drawView.getHeight());
-                                    Intent intent = new Intent(MainActivity.this,DetectNum.class);
-                                    startActivityForResult(intent,CustomDialog.DIALOG_REQUEST);
+                                    if(DrawingView.paths.size()==0) {
+                                        scrnshotbitmap = takescreenshot(location[0], location[1], drawView.getWidth(), drawView.getHeight());
+                                        Intent intent = new Intent(MainActivity.this, DetectNum.class);
+                                        startActivityForResult(intent, CustomDialog.DIALOG_REQUEST);
+                                    }else{
+                                        Path path = DrawingView.paths.get(DrawingView.paths.size()-1);
+                                        RectF bounds = new RectF();
+                                        path.computeBounds(bounds,true);
+                                        int width=(int)Math.ceil(bounds.width()); int height = (int)Math.ceil(bounds.height());
+                                        int left=(int)Math.ceil(bounds.left); int top = (int)Math.ceil(bounds.top);
+                                        //MAKE THE SCANNED BIT MAP A SQUARE !!! BRILLIANT IDEA I JUST HAD
+                                        int dims = Math.max(width+100,height+100);
+                                        int[] bias = new int[2];
+                                        if(dims==width+100){
+                                            //Starting point of Height needs fixing to center the image
+                                            bias[0]=0; bias[1] = (int)(0.5*(height+100)-0.5*dims);
+                                        }
+                                        if(dims==height+100){
+                                            bias[0]=(int)(0.5*(width+100)-0.5*dims); bias[1] =0;
+                                        }
+                                        int leftpos = Math.max((location[0]+left)-50+bias[0],0); int toppos = Math.max(location[1]+top-50+bias[1],0);
+                                        scrnshotbitmap = takescreenshot(leftpos, toppos, Math.min(dims,twidth-leftpos), Math.min(dims,theight-toppos));
+                                        Intent intent = new Intent(MainActivity.this, DetectNum.class);
+                                        startActivityForResult(intent, CustomDialog.DIALOG_REQUEST);
+                                    }
                                 }
                             });
                         }
@@ -404,4 +428,19 @@ public class MainActivity<alertDialog> extends AppCompatActivity implements View
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         savefile();
     }
-}
+}/*
+    private int[] getreqcoords(){
+        int location[] = new int[2];
+        drawView.getLocationOnScreen(location);
+        scrnshotbitmap = takescreenshot(location[0],location[1],drawView.getWidth(),drawView.getHeight());
+        int []
+        for(int i=0;i<scrnshotbitmap.getHeight();i++){
+            for(int j=0;j<scrnshotbitmap.getWidth();j++){
+                int  clr   = scrnshotbitmap.getp
+                int  red   = (clr & 0x00ff0000) >> 16;
+                int  green = (clr & 0x0000ff00) >> 8;
+                int  blue  =  clr & 0x000000ff;
+                image.setRGB(x, y, clr);
+            }
+        }
+    }*/

@@ -7,8 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,12 +14,14 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DrawingView extends View {
     //drawing path
     private Path drawPath;
     private boolean draw=false,erase=false;
-    private float posX=0,posY=0,WIDTH=0,HEIGHT=0,padding=0;
+    private int width=500, height=500;
     //drawing and canvas paint
     private Paint drawPaint, canvasPaint;
     //initial color
@@ -30,6 +30,7 @@ public class DrawingView extends View {
     protected Canvas drawCanvas;
     //canvas bitmap
     protected Bitmap canvasBitmap;
+    public static List<Path> paths = new ArrayList<Path>();
     public DrawingView(Context context) {
 
         super(context);
@@ -73,6 +74,8 @@ public class DrawingView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 //view given size
         super.onSizeChanged(w,h,oldw,oldh);
+        width = w;
+        height = h;
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
     }
@@ -101,6 +104,7 @@ public class DrawingView extends View {
                     break;
                 case MotionEvent.ACTION_UP:
                     drawCanvas.drawPath(drawPath, drawPaint);
+                    paths.add(new Path(drawPath));
                     drawPath.reset();
                     break;
                 default:
@@ -116,9 +120,13 @@ public class DrawingView extends View {
     public void seteraser(boolean b){
         erase = b;
         if(erase) {
-            drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            drawPaint.setStrokeWidth(300);
+            //drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+            //drawPaint.setStrokeWidth(300);
             draw=true;
+            canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            drawCanvas = new Canvas(canvasBitmap);
+            invalidate();
+            paths = new ArrayList<Path>();
         }
         else {
             drawPaint.setXfermode(null);
