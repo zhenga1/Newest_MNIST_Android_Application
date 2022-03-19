@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Iterator;
 
 public class MainActivity<alertDialog> extends AppCompatActivity implements View.OnClickListener {
     private DrawingView drawView;
@@ -345,20 +346,25 @@ public class MainActivity<alertDialog> extends AppCompatActivity implements View
                                         Intent intent = new Intent(MainActivity.this, DetectNum.class);
                                         startActivityForResult(intent, CustomDialog.DIALOG_REQUEST);
                                     }else{
-                                        Path path = DrawingView.paths.get(DrawingView.paths.size()-1);
-                                        RectF bounds = new RectF();
-                                        path.computeBounds(bounds,true);
-                                        int width=(int)Math.ceil(bounds.width()); int height = (int)Math.ceil(bounds.height());
-                                        int left=(int)Math.ceil(bounds.left); int top = (int)Math.ceil(bounds.top);
-                                        //MAKE THE SCANNED BIT MAP A SQUARE !!! BRILLIANT IDEA I JUST HAD
-                                        int dims = Math.max(width+100,height+100);
-                                        int[] bias = new int[2];
-                                        if(dims==width+100){
-                                            //Starting point of Height needs fixing to center the image
-                                            bias[0]=0; bias[1] = (int)(0.5*(height+100)-0.5*dims);
+                                        int width=0;int height=0; int left=2147483647;int top=2147483647;
+                                        for (Iterator<Path> it = DrawingView.paths.iterator(); it.hasNext(); ) {
+                                            Path path = it.next();
+                                            RectF bounds = new RectF();
+                                            path.computeBounds(bounds,true);
+                                            width=Math.max((int)Math.ceil(bounds.width()),width);
+                                            height=Math.max((int)Math.ceil(bounds.height()),height);
+                                            left=Math.min((int)Math.ceil(bounds.left),left);
+                                            top = Math.min((int)Math.ceil(bounds.top),top);
                                         }
-                                        if(dims==height+100){
-                                            bias[0]=(int)(0.5*(width+100)-0.5*dims); bias[1] =0;
+                                        //MAKE THE SCANNED BIT MAP A SQUARE !!! BRILLIANT IDEA I JUST HAD
+                                        int dims = Math.max(width+150,height+150);
+                                        int[] bias = new int[2];
+                                        if(dims==width+150){
+                                            //Starting point of Height needs fixing to center the image
+                                            bias[0]=0; bias[1] = (int)(0.5*(height+150)-0.5*dims);
+                                        }
+                                        if(dims==height+150){
+                                            bias[0]=(int)(0.5*(width+150)-0.5*dims); bias[1] =0;
                                         }
                                         int leftpos = Math.max((location[0]+left)-50+bias[0],0); int toppos = Math.max(location[1]+top-50+bias[1],0);
                                         scrnshotbitmap = takescreenshot(leftpos, toppos, Math.min(dims,twidth-leftpos), Math.min(dims,theight-toppos));
