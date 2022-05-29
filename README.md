@@ -9,3 +9,5 @@ https://github.com/zhenga1/Practice-android-digit-detection-repository
 
 Without intelligent area detection for the written digit(entire canvas):
 https://github.com/zhenga1/Newer_Android_MNIST_Drawing
+
+If there are any questions or comments, do not hesitate to leave messages on the relevant repo pages.
